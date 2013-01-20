@@ -9,6 +9,13 @@ The codecs
   GSM
   Speex
 
+Architecture-specific notes
+---------------------------
+
+Some of the code has been optimized with assembly for specific
+platforms, particularly for building on ARM (armeabi and armeabi-v7a)
+which is useful for mobile devices like Android and iPhone.
+
 Supported platforms
 -------------------
 
