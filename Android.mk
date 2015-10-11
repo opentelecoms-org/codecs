@@ -1,6 +1,7 @@
 LOCAL_PATH := $(call my-dir)
 SPEEX	:= speex-1.2rc1
 SILK     := silk
+OPUS     := opus-1.1
 
 include $(CLEAR_VARS)
 LOCAL_MODULE    := OSNetworkSystem
@@ -324,4 +325,145 @@ LOCAL_ARM_MODE := arm
 LOCAL_LDLIBS := -L$(SYSROOT)/usr/lib -llog
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(SPANDSP)/spandsp $(LOCAL_PATH)/$(SPANDSP)
 LOCAL_CFLAGS = -O3
+include $(BUILD_SHARED_LIBRARY)
+
+include $(CLEAR_VARS)
+LOCAL_MODULE    := opus_jni
+LOCAL_SRC_FILES := opus_jni.cpp $(LOCAL_PATH)/$(OPUS)/celt/celt_decoder.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/arm/arm_celt_map.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/arm/armcpu.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/mathops.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/cwrs.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/kiss_fft.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/vq.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/celt_encoder.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/laplace.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/bands.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/quant_bands.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/entenc.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/mdct.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/modes.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/celt_lpc.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/entcode.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/pitch.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/entdec.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/celt.c \
+        $(LOCAL_PATH)/$(OPUS)/celt/rate.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/resampler_private_IIR_FIR.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/init_encoder.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/init_decoder.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/stereo_LR_to_MS.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/decode_frame.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/stereo_MS_to_LR.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/check_control_input.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/process_NLSFs.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/biquad_alt.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/resampler_down2_3.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/A2NLSF.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/shell_coder.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/resampler_rom.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/PLC.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/NSQ_del_dec.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/pitch_est_tables.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/encode_pulses.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/resampler.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/enc_API.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/NSQ.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/resampler_private_AR2.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/NLSF_stabilize.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/NLSF_unpack.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/interpolate.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/control_audio_bandwidth.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/stereo_find_predictor.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/decode_indices.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/code_signs.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/bwexpander_32.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/decoder_set_fs.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/LP_variable_cutoff.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/residual_energy16_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/regularize_correlations_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/k2a_Q16_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/apply_sine_window_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/k2a_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/autocorr_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/noise_shape_analysis_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/schur_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/find_pred_coefs_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/process_gains_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/LTP_scale_ctrl_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/schur64_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/find_LTP_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/pitch_analysis_core_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/find_LPC_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/vector_ops_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/prefilter_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/find_pitch_lags_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/corrMatrix_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/LTP_analysis_filter_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/warped_autocorrelation_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/encode_frame_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/residual_energy_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/solve_LS_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/fixed/burg_modified_FIX.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/LPC_analysis_filter.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/LPC_inv_pred_gain.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/resampler_private_up2_HQ.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/tables_LTP.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/HP_variable_cutoff.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/VAD.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/sum_sqr_shift.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/decode_parameters.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/inner_prod_aligned.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/sort.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/tables_NLSF_CB_WB.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/control_codec.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/tables_pulses_per_block.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/bwexpander.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/tables_other.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/resampler_private_down_FIR.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/lin2log.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/NLSF_encode.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/CNG.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/sigm_Q15.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/debug.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/decode_core.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/ana_filt_bank_1.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/decode_pulses.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/log2lin.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/dec_API.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/stereo_quant_pred.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/NLSF2A.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/table_LSF_cos.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/NLSF_decode.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/gain_quant.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/tables_pitch_lag.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/NLSF_VQ.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/stereo_decode_pred.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/stereo_encode_pred.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/decode_pitch.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/tables_gain.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/tables_NLSF_CB_NB_MB.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/quant_LTP_gains.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/resampler_down2.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/VQ_WMat_EC.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/NLSF_VQ_weights_laroia.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/encode_indices.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/NLSF_del_dec_quant.c \
+        $(LOCAL_PATH)/$(OPUS)/silk/control_SNR.c \
+        $(LOCAL_PATH)/$(OPUS)/src/opus_encoder.c \
+        $(LOCAL_PATH)/$(OPUS)/src/analysis.c \
+        $(LOCAL_PATH)/$(OPUS)/src/opus_multistream_encoder.c \
+        $(LOCAL_PATH)/$(OPUS)/src/opus_multistream_decoder.c \
+        $(LOCAL_PATH)/$(OPUS)/src/mlp_data.c \
+        $(LOCAL_PATH)/$(OPUS)/src/opus_multistream.c \
+        $(LOCAL_PATH)/$(OPUS)/src/opus.c \
+        $(LOCAL_PATH)/$(OPUS)/src/opus_decoder.c \
+        $(LOCAL_PATH)/$(OPUS)/src/mlp.c \
+        $(LOCAL_PATH)/$(OPUS)/src/opus_compare.c \
+        $(LOCAL_PATH)/$(OPUS)/src/repacketizer.c
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/$(OPUS)/include $(LOCAL_PATH)/$(OPUS)/celt $(LOCAL_PATH)/$(OPUS)/silk $(LOCAL_PATH)/$(OPUS)/silk/fixed
+LOCAL_CFLAGS = -O3 -Drestrict='' -D__EMX__ -DOPUS_BUILD -DFIXED_POINT -DDISABLE_FLOAT_API -DUSE_ALLOCA -DHAVE_LRINT -DHAVE_LRINTF -O3 -fno-math-errno
+LOCAL_STATIC_LIBRARIES :=  silkcommon
+LOCAL_ARM_MODE := arm
+LOCAL_LDLIBS := -L$(SYSROOT)/usr/lib -llog
 include $(BUILD_SHARED_LIBRARY)

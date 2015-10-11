@@ -12,6 +12,7 @@ APP_MODULES	 += silk8_jni
 APP_MODULES	 += g729_jni
 APP_MODULES	 += g722_jni
 APP_MODULES	 += gsm_jni
+APP_MODULES	 += opus_jni
 
 APP_OPTIM        := release 
 APP_CFLAGS       += -O3
