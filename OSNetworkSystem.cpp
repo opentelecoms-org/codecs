@@ -154,10 +154,8 @@
 struct CachedFields {
     jfieldID fd_descriptor;
     jclass iaddr_class;
-    jmethodID iaddr_class_init;
     jmethodID iaddr_getbyaddress;
-    jfieldID iaddr_ipaddress;
-    jclass genericipmreq_class;
+    jmethodID iaddr_getaddress;
     jclass integer_class;
     jmethodID integer_class_init;
     jfieldID integer_class_value;
@@ -353,8 +351,8 @@ static int socketAddressToInetAddress(JNIEnv *env,
     jbyteArray ipaddress;
     int result;
 
-    ipaddress = (jbyteArray)env->GetObjectField(inetaddress,
-            gCachedFields.iaddr_ipaddress);
+    ipaddress = (jbyteArray)env->CallObjectMethod(inetaddress,
+            gCachedFields.iaddr_getaddress);
 
     if (structInToJavaAddress(env, &sockaddress->sin_addr, ipaddress) < 0) {
         return -1;
@@ -377,8 +375,8 @@ static int inetAddressToSocketAddress(JNIEnv *env,
     jbyteArray ipaddress;
     int result;
 
-    ipaddress = (jbyteArray)env->GetObjectField(inetaddress,
-            gCachedFields.iaddr_ipaddress);
+    ipaddress = (jbyteArray)env->CallObjectMethod(inetaddress,
+            gCachedFields.iaddr_getaddress);
 
     memset(sockaddress, 0, sizeof(sockaddress));
 
@@ -1204,15 +1202,6 @@ extern "C" void Java_org_sipdroid_net_impl_OSNetworkSystem_oneTimeInitialization
 
     gCachedFields.iaddr_class = (jclass) env->NewGlobalRef(iaddrclass);
 
-    jmethodID iaddrclassinit = env->GetMethodID(iaddrclass, "<init>", "()V");
-
-    if (iaddrclassinit == NULL) {
-        jniThrowException(env, "java/lang/NoSuchMethodError", "InetAddress.<init>()");
-        return;
-    }
-
-    gCachedFields.iaddr_class_init = iaddrclassinit;
-
     jmethodID iaddrgetbyaddress = env->GetStaticMethodID(iaddrclass,
             "getByAddress", "([B)Ljava/net/InetAddress;");
 
@@ -1224,27 +1213,15 @@ extern "C" void Java_org_sipdroid_net_impl_OSNetworkSystem_oneTimeInitialization
 
     gCachedFields.iaddr_getbyaddress = iaddrgetbyaddress;
 
-    jfieldID iaddripaddress = env->GetFieldID(iaddrclass, "ipaddress", "[B");
+    jmethodID iaddrgetaddress = env->GetMethodID(iaddrclass, "getAddress", "()[B");
 
-    if (iaddripaddress == NULL) {
+    if (iaddrgetaddress == NULL) {
         jniThrowException(env, "java/lang/NoSuchFieldError",
-                "Can't find field InetAddress.ipaddress");
+                "Can't find method InetAddress.getAddress");
         return;
     }
 
-    gCachedFields.iaddr_ipaddress = iaddripaddress;
-
-    // get the GenericIPMreq class
-
-    jclass genericipmreqclass = env->FindClass("org/apache/harmony/luni/net/GenericIPMreq");
-
-    if (genericipmreqclass == NULL) {
-        jniThrowException(env, "java/lang/ClassNotFoundException",
-                "org.apache.harmony.luni.net.GenericIPMreq");
-        return;
-    }
-
-    gCachedFields.genericipmreq_class = (jclass) env->NewGlobalRef(genericipmreqclass);
+    gCachedFields.iaddr_getaddress = iaddrgetaddress;
 
     // initializing Integer
 
@@ -3395,7 +3372,8 @@ extern "C" void Java_org_sipdroid_net_impl_OSNetworkSystem_setInetAddressImpl(JN
         jobject sender, jbyteArray address) {
     // LOGD("ENTER setInetAddressImpl");
 
-    env->SetObjectField(sender, gCachedFields.iaddr_ipaddress, address);
+    // FIXME - is this needed?
+    //env->SetObjectField(sender, gCachedFields.iaddr_ipaddress, address);
 }
 
 /*
@@ -3490,8 +3468,7 @@ extern "C" jobject Java_org_sipdroid_net_impl_OSNetworkSystem_inheritedChannelIm
                     ntohs(local_addr.sin_port));
 
             // new and set remote addr
-            addr_object = env->NewObject(gCachedFields.iaddr_class,
-                    gCachedFields.iaddr_class_init);
+            addr_object = structInToInetAddress(env, address);
             if (NULL == addr_object) {
                 goto clean;
             }
@@ -3506,10 +3483,6 @@ extern "C" jobject Java_org_sipdroid_net_impl_OSNetworkSystem_inheritedChannelIm
             addr_field = env->GetFieldID(socketaddr_class, "addr",
                     "Ljava/net/InetAddress;");
             env->SetObjectField(socketaddr_object, addr_field, addr_object);
-            addr_array = env->NewByteArray((jsize)4);
-            env->SetByteArrayRegion(addr_array, (jsize)0, (jsize)4, address);
-            env->SetObjectField(addr_object, gCachedFields.iaddr_ipaddress,
-                     addr_array);
 
             // localAddr
             socketaddr_class = env->FindClass("java/net/InetSocketAddress");
@@ -3520,8 +3493,7 @@ extern "C" jobject Java_org_sipdroid_net_impl_OSNetworkSystem_inheritedChannelIm
 
             localAddr_field = env->GetFieldID(channel_class, "localAddress",
                      "Ljava/net/InetAddress;");
-            localAddr_object = env->NewObject(gCachedFields.iaddr_class,
-                     gCachedFields.iaddr_class_init);
+            localAddr_object = structInToInetAddress(env, localAddr);
             jfieldID socketaddr_field = env->GetFieldID(channel_class,
                      "connectAddress", "Ljava/net/InetSocketAddress;");
             jobject socketaddr_object = env->GetObjectField(channel_object,
@@ -3531,10 +3503,6 @@ extern "C" jobject Java_org_sipdroid_net_impl_OSNetworkSystem_inheritedChannelIm
             if (NULL == localAddr_object) {
                 goto clean;
             }
-            addr_array = env->NewByteArray((jsize)4);
-            env->SetByteArrayRegion(addr_array, (jsize)0, (jsize)4, localAddr);
-            env->SetObjectField(localAddr_object, gCachedFields.iaddr_ipaddress,
-                    addr_array);
 
 
             // set port
@@ -3589,17 +3557,12 @@ extern "C" jobject Java_org_sipdroid_net_impl_OSNetworkSystem_inheritedChannelIm
 
             localAddr_field = env->GetFieldID(channel_class, "localAddress",
                     "Ljava/net/InetAddress;");
-            localAddr_object = env->NewObject(gCachedFields.iaddr_class,
-                    gCachedFields.iaddr_class_init);
+            localAddr_object = structInToInetAddress(env, localAddr);
             if (NULL == localAddr_object) {
                  goto clean;
             }
             env->SetObjectField(socketImpl_object, localAddr_field,
                     localAddr_object);
-            addr_array = env->NewByteArray((jsize)4);
-            env->SetByteArrayRegion(addr_array, (jsize)0, (jsize)4, localAddr);
-            env->SetObjectField(localAddr_object,
-                    gCachedFields.iaddr_ipaddress, addr_array);
 
             // set port
             port_field = env->GetFieldID(socketImpl_class, "localport", "I");
@@ -3637,8 +3600,7 @@ extern "C" jobject Java_org_sipdroid_net_impl_OSNetworkSystem_inheritedChannelIm
         env->SetIntField(channel_object, port_field, ntohs(local_addr.sin_port));
 
         // new and set remote addr
-        addr_object = env->NewObject(gCachedFields.iaddr_class,
-                gCachedFields.iaddr_class_init);
+        addr_object = structInToInetAddress(env, address);
         if (NULL == addr_object) {
             goto clean;
         }
@@ -3652,9 +3614,6 @@ extern "C" jobject Java_org_sipdroid_net_impl_OSNetworkSystem_inheritedChannelIm
         addr_field = env->GetFieldID(socketaddr_class, "addr",
                 "Ljava/net/InetAddress;");
         env->SetObjectField(socketaddr_object, addr_field, addr_object);
-        addr_array = env->NewByteArray((jsize)4);
-        env->SetByteArrayRegion(addr_array, (jsize)0, (jsize)4, address);
-        env->SetObjectField(addr_object, gCachedFields.iaddr_ipaddress, addr_array);
 
         // set bound
         if (0 != local_addr.sin_port) {
