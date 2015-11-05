@@ -3086,8 +3086,6 @@ extern "C" void Java_org_sipdroid_net_impl_OSNetworkSystem_setSocketOptionImpl(J
             throwSocketException(env, SOCKERR_BADSOCKET);
             return;
         }
-    } else if (env->IsInstanceOf(optVal, gCachedFields.genericipmreq_class)) {
-        // we'll use optVal directly
     } else {
         throwSocketException(env, SOCKERR_OPTUNSUPP);
         return;
