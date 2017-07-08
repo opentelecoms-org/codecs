@@ -28,11 +28,13 @@ Portions of this file are derived from the following ITU standard:
 #ifndef __TYPE_DEF_H__
 #define __TYPE_DEF_H__
 
-typedef short          Word16;
-typedef int            Word32;
-typedef int            Flag;
-typedef unsigned char  UWord8;
-typedef unsigned short UWord16;
-typedef unsigned int   UWord32;
+#include <stdint.h>
+
+typedef int16_t  Word16;
+typedef int32_t  Word32;
+typedef int32_t  Flag;
+typedef uint8_t  UWord8;
+typedef uint16_t UWord16;
+typedef uint32_t UWord32;
 
 #endif
