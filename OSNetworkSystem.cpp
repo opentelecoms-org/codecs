@@ -151,6 +151,16 @@
 #define SEND_RETRY_TIME 500000
 
 
+#define SIZEOF_POINTER (UINTPTR_MAX / 255 % 255)
+
+#if SIZEOF_POINTER == 8
+  #define JNI_PTR jlong
+#elif SIZEOF_POINTER == 4
+  #define JNI_PTR jint
+#else
+  #error only support 32 or 64 bit pointer sizes
+#endif
+
 struct CachedFields {
     jfieldID fd_descriptor;
     jclass iaddr_class;
@@ -841,7 +851,7 @@ void setConnectContext(JNIEnv *env,jobject longclass,jbyte * context) {
     jfieldID descriptorFID;
     descriptorCLS = env->FindClass("java/lang/Long");
     descriptorFID = env->GetFieldID(descriptorCLS, "value", "J");
-    env->SetLongField(longclass, descriptorFID, (jlong)((jint)context));
+    env->SetLongField(longclass, descriptorFID, (jlong)((JNI_PTR)context));
 };
 
 /**
@@ -855,7 +865,7 @@ jbyte *getConnectContext(JNIEnv *env, jobject longclass) {
     jfieldID descriptorFID;
     descriptorCLS = env->FindClass("java/lang/Long");
     descriptorFID = env->GetFieldID(descriptorCLS, "value", "J");
-    return (jbyte*) ((jint)env->GetLongField(longclass, descriptorFID));
+    return (jbyte*) ((JNI_PTR)env->GetLongField(longclass, descriptorFID));
 };
 
 // typical ip checksum
@@ -1441,7 +1451,7 @@ extern "C" void Java_org_sipdroid_net_impl_OSNetworkSystem_createDatagramSocketI
 }
 
 extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_readSocketDirectImpl(JNIEnv* env, jclass clazz,
-        jobject fileDescriptor, jint address, jint offset, jint count,
+        jobject fileDescriptor, JNI_PTR address, jint offset, jint count,
         jint timeout) {
     // LOGD("ENTER readSocketDirectImpl");
 
@@ -1504,7 +1514,7 @@ extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_readSocketImpl(JNIEnv
     }
 
     result = Java_org_sipdroid_net_impl_OSNetworkSystem_readSocketDirectImpl(env, clazz, fileDescriptor,
-            (jint) message, offset, count, timeout);
+            (JNI_PTR) message, offset, count, timeout);
 
     if (result > 0) {
         env->SetByteArrayRegion(data, offset, result, (jbyte *)message);
@@ -1518,7 +1528,7 @@ extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_readSocketImpl(JNIEnv
 }
 
 extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_writeSocketDirectImpl(JNIEnv* env, jclass clazz,
-        jobject fileDescriptor, jint address, jint offset, jint count) {
+        jobject fileDescriptor, JNI_PTR address, jint offset, jint count) {
     // LOGD("ENTER writeSocketDirectImpl");
 
     int handle;
@@ -1606,7 +1616,7 @@ extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_writeSocketImpl(JNIEn
     env->GetByteArrayRegion(data, offset, count, message);
 
     result = Java_org_sipdroid_net_impl_OSNetworkSystem_writeSocketDirectImpl(env, clazz, fileDescriptor,
-            (jint) message, offset, count);
+            (JNI_PTR) message, offset, count);
 
     if (( jbyte *)message != internalBuffer) {
       free(( jbyte *)message);
@@ -2259,7 +2269,7 @@ extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_peekDatagramImpl(JNIE
 }
 
 extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_receiveDatagramDirectImpl(JNIEnv* env, jclass clazz,
-        jobject fd, jobject packet, jint address, jint offset, jint length,
+        jobject fd, jobject packet, JNI_PTR address, jint offset, jint length,
         jint receiveTimeout, jboolean peek) {
     // LOGD("ENTER receiveDatagramDirectImpl");
 
@@ -2325,7 +2335,7 @@ extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_receiveDatagramImpl(J
     }
 
     int actualLength = Java_org_sipdroid_net_impl_OSNetworkSystem_receiveDatagramDirectImpl(env, clazz, fd,
-            packet, (jint)bytes, offset, localLength, receiveTimeout, peek);
+            packet, (JNI_PTR)bytes, offset, localLength, receiveTimeout, peek);
 
     if (actualLength > 0) {
         env->SetByteArrayRegion(data, offset, actualLength, bytes);
@@ -2336,7 +2346,7 @@ extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_receiveDatagramImpl(J
 }
 
 extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_recvConnectedDatagramDirectImpl(JNIEnv* env,
-        jclass clazz, jobject fd, jobject packet, jint address, jint offset,
+        jclass clazz, jobject fd, jobject packet, JNI_PTR address, jint offset,
         jint length, jint receiveTimeout, jboolean peek) {
     // LOGD("ENTER receiveConnectedDatagramDirectImpl");
 
@@ -2384,7 +2394,7 @@ extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_recvConnectedDatagram
     }
 
     int actualLength = Java_org_sipdroid_net_impl_OSNetworkSystem_recvConnectedDatagramDirectImpl(env,
-            clazz, fd, packet, (jint)bytes, offset, localLength,
+            clazz, fd, packet, (JNI_PTR)bytes, offset, localLength,
             receiveTimeout, peek);
 
     if (actualLength > 0) {
@@ -2396,7 +2406,7 @@ extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_recvConnectedDatagram
 }
 
 extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_sendDatagramDirectImpl(JNIEnv* env, jclass clazz,
-        jobject fd, jint address, jint offset, jint length, jint port,
+        jobject fd, JNI_PTR address, jint offset, jint length, jint port,
         jboolean bindToDevice, jint trafficClass, jobject inetAddress) {
     // LOGD("ENTER sendDatagramDirectImpl");
 
@@ -2441,7 +2451,7 @@ extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_sendDatagramImpl(JNIE
 
     jbyte *bytes = env->GetByteArrayElements(data, NULL);
     int actualLength = Java_org_sipdroid_net_impl_OSNetworkSystem_sendDatagramDirectImpl(env, clazz, fd,
-            (jint)bytes, offset, length, port, bindToDevice, trafficClass,
+            (JNI_PTR)bytes, offset, length, port, bindToDevice, trafficClass,
             inetAddress);
     env->ReleaseByteArrayElements(data, bytes, JNI_ABORT);
 
@@ -2449,7 +2459,7 @@ extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_sendDatagramImpl(JNIE
 }
 
 extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_sendConnectedDatagramDirectImpl(JNIEnv* env,
-        jclass clazz, jobject fd, jint address, jint offset, jint length,
+        jclass clazz, jobject fd, JNI_PTR address, jint offset, jint length,
         jboolean bindToDevice) {
     // LOGD("ENTER sendConnectedDatagramDirectImpl");
 
@@ -2483,7 +2493,7 @@ extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_sendConnectedDatagram
 
     jbyte *bytes = env->GetByteArrayElements(data, NULL);
     int actualLength = Java_org_sipdroid_net_impl_OSNetworkSystem_sendConnectedDatagramDirectImpl(env,
-            clazz, fd, (jint)bytes, offset, length, bindToDevice);
+            clazz, fd, (JNI_PTR)bytes, offset, length, bindToDevice);
     env->ReleaseByteArrayElements(data, bytes, JNI_ABORT);
 
     return actualLength;
