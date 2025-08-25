@@ -860,9 +860,9 @@ jbyte *getConnectContext(JNIEnv *env, jobject longclass) {
 
 // typical ip checksum
 unsigned short ip_checksum(unsigned short* buffer, int size) {
-    register unsigned short * buf = buffer;
-    register int bufleft = size;
-    register unsigned long sum = 0;
+    unsigned short * buf = buffer;
+    int bufleft = size;
+    unsigned long sum = 0;
 
     while (bufleft > 1) {
         sum = sum + (*buf++);
