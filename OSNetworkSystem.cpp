@@ -158,21 +158,21 @@ struct CachedFields {
     jmethodID iaddr_getaddress;
     jclass integer_class;
     jmethodID integer_class_init;
-    jfieldID integer_class_value;
+    jmethodID integer_class_value;
     jclass boolean_class;
     jmethodID boolean_class_init;
-    jfieldID boolean_class_value;
+    jmethodID boolean_class_value;
     jclass byte_class;
     jmethodID byte_class_init;
-    jfieldID byte_class_value;
+    jmethodID byte_class_value;
     jclass string_class;
     jmethodID string_class_init;
     jfieldID socketimpl_address;
     jfieldID socketimpl_port;
     jclass dpack_class;
-    jfieldID dpack_address;
-    jfieldID dpack_port;
-    jfieldID dpack_length;
+    jmethodID dpack_address;
+    jmethodID dpack_port;
+    jmethodID dpack_length;
     jclass fd_class;
     jfieldID descriptor;
 } gCachedFields;
@@ -1241,10 +1241,10 @@ extern "C" void Java_org_sipdroid_net_impl_OSNetworkSystem_oneTimeInitialization
         return;
     }
 
-    jfieldID integerclassvalue = env->GetFieldID(integerclass, "value", "I");
+    jmethodID integerclassvalue = env->GetMethodID(integerclass, "intValue", "()I");
 
     if (integerclassvalue == NULL) {
-        jniThrowException(env, "java/lang/NoSuchMethodError", "Integer.value");
+        jniThrowException(env, "java/lang/NoSuchMethodError", "Integer.intValue");
         return;
     }
 
@@ -1270,10 +1270,10 @@ extern "C" void Java_org_sipdroid_net_impl_OSNetworkSystem_oneTimeInitialization
         return;
     }
 
-    jfieldID booleanclassvalue = env->GetFieldID(booleanclass, "value", "Z");
+    jmethodID booleanclassvalue = env->GetMethodID(booleanclass, "booleanValue", "()Z");
 
     if (booleanclassvalue == NULL) {
-        jniThrowException(env, "java/lang/NoSuchMethodError", "Boolean.value");
+        jniThrowException(env, "java/lang/NoSuchMethodError", "Boolean.booleanValue");
         return;
     }
 
@@ -1299,10 +1299,10 @@ extern "C" void Java_org_sipdroid_net_impl_OSNetworkSystem_oneTimeInitialization
         return;
     }
 
-    jfieldID byteclassvalue = env->GetFieldID(byteclass, "value", "B");
+    jmethodID byteclassvalue = env->GetMethodID(byteclass, "byteValue", "()B");
 
     if (byteclassvalue == NULL) {
-        jniThrowException(env, "java/lang/NoSuchMethodError", "Byte.value");
+        jniThrowException(env, "java/lang/NoSuchMethodError", "Byte.byteValue");
         return;
     }
 
@@ -1367,27 +1367,27 @@ extern "C" void Java_org_sipdroid_net_impl_OSNetworkSystem_oneTimeInitialization
         return;
     }
 
-    gCachedFields.dpack_address = env->GetFieldID(gCachedFields.dpack_class,
-            "address", "Ljava/net/InetAddress;");
+    gCachedFields.dpack_address = env->GetMethodID(gCachedFields.dpack_class,
+            "setAddress", "(Ljava/net/InetAddress;)V");
     if (gCachedFields.dpack_address == NULL) {
-        jniThrowException(env, "java/lang/NoSuchFieldError",
-                "DatagramPacket.address");
+        jniThrowException(env, "java/lang/NoSuchMethodError",
+                "DatagramPacket.setAddress");
         return;
     }
 
-    gCachedFields.dpack_port = env->GetFieldID(gCachedFields.dpack_class,
-            "port", "I");
+    gCachedFields.dpack_port = env->GetMethodID(gCachedFields.dpack_class,
+            "setPort", "(I)V");
     if (gCachedFields.dpack_port == NULL) {
-        jniThrowException(env, "java/lang/NoSuchFieldError",
-                "DatagramPacket.port");
+        jniThrowException(env, "java/lang/NoSuchMethodError",
+                "DatagramPacket.setPort");
         return;
     }
 
-    gCachedFields.dpack_length = env->GetFieldID(gCachedFields.dpack_class,
-            "length", "I");
+    gCachedFields.dpack_length = env->GetMethodID(gCachedFields.dpack_class,
+            "setLength", "(I)V");
     if (gCachedFields.dpack_length == NULL) {
-        jniThrowException(env, "java/lang/NoSuchFieldError",
-                "DatagramPacket.length");
+        jniThrowException(env, "java/lang/NoSuchMethodError",
+                "DatagramPacket.setLength");
         return;
     }
 
@@ -2302,10 +2302,10 @@ extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_receiveDatagramDirect
         jobject sender = env->CallStaticObjectMethod(
                 gCachedFields.iaddr_class, gCachedFields.iaddr_getbyaddress,
                 addr);
-        env->SetObjectField(packet, gCachedFields.dpack_address, sender);
-        env->SetIntField(packet, gCachedFields.dpack_port, port);
+        env->CallVoidMethod(packet, gCachedFields.dpack_address, sender);
+        env->CallVoidMethod(packet, gCachedFields.dpack_port, port);
         */
-        env->SetIntField(packet, gCachedFields.dpack_length, actualLength);
+        env->CallVoidMethod(packet, gCachedFields.dpack_length, actualLength);
     }
     add_recv_stats(handle, actualLength);
     return actualLength;
@@ -2364,7 +2364,7 @@ extern "C" jint Java_org_sipdroid_net_impl_OSNetworkSystem_recvConnectedDatagram
     }
 
     if ( packet != NULL) {
-        env->SetIntField(packet, gCachedFields.dpack_length, actualLength);
+        env->CallVoidMethod(packet, gCachedFields.dpack_length, actualLength);
     }
     add_recv_stats(handle, actualLength);
     return actualLength;
@@ -3076,11 +3076,11 @@ extern "C" void Java_org_sipdroid_net_impl_OSNetworkSystem_setSocketOptionImpl(J
     int sockSize = sizeof(sockVal);
 
     if (env->IsInstanceOf(optVal, gCachedFields.integer_class)) {
-        intVal = (int) env->GetIntField(optVal, gCachedFields.integer_class_value);
+        intVal = (int) env->CallIntMethod(optVal, gCachedFields.integer_class_value);
     } else if (env->IsInstanceOf(optVal, gCachedFields.boolean_class)) {
-        intVal = (int) env->GetBooleanField(optVal, gCachedFields.boolean_class_value);
+        intVal = (int) env->CallBooleanMethod(optVal, gCachedFields.boolean_class_value);
     } else if (env->IsInstanceOf(optVal, gCachedFields.byte_class)) {
-        byteVal = (int) env->GetByteField(optVal, gCachedFields.byte_class_value);
+        byteVal = (int) env->CallByteMethod(optVal, gCachedFields.byte_class_value);
     } else if (env->IsInstanceOf(optVal, gCachedFields.iaddr_class)) {
         if (inetAddressToSocketAddress(env, optVal, 0, &sockVal) < 0) {
             throwSocketException(env, SOCKERR_BADSOCKET);
